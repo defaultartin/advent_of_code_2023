@@ -33,3 +33,18 @@ for time in times
 end
 
 println("Part 1: $(answer)")
+
+time_2 = parse(Int64, join(split(lines[1])[2:end]))
+distance_2 = parse(Int64, join(split(lines[2])[2:end]))
+
+part_2_ways = 0
+
+for i in 1:time_2-1
+	global part_2_ways
+	distance = (time_2 - i) * i
+	if distance > distance_2
+		part_2_ways += 1
+	end
+end
+
+println("Part 2: $(part_2_ways)")
