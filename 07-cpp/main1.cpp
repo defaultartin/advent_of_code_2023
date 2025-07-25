@@ -10,7 +10,6 @@
 using namespace std;
 
 typedef enum {
-	CARD_JACK,
 	CARD_TWO,
 	CARD_THREE,
 	CARD_FOUR,
@@ -20,6 +19,7 @@ typedef enum {
 	CARD_EIGHT,
 	CARD_NINE,
 	CARD_TEN,
+	CARD_JACK,
 	CARD_QUEEN,
 	CARD_KING,
 	CARD_ACE,
@@ -66,8 +66,6 @@ Card get_card(char symbol)
 
 HandType get_hand_type(string hand)
 {
-	int hand_type;
-
 	set<char> cards_set;
 	vector<char> cards;
 
@@ -82,74 +80,36 @@ HandType get_hand_type(string hand)
 	else if (cards_set.size() == 2) {
 		for (char c : cards_set) {
 			int cnt = count(cards.begin(), cards.end(), c);
-			if (cnt == 1 || cnt == 4) {
-				hand_type = HAND_TYPE_FOUR_OF_A_KIND; // "Four of a kind" AA8AA
-				break;
-			}
-			else if (cnt == 2 || cnt == 3) {
-				hand_type = HAND_TYPE_FULL_HOUSE; // "Full house" 23332
-				break;
-			}
+			if (cnt == 1 || cnt == 4)
+				return HAND_TYPE_FOUR_OF_A_KIND; // "Four of a kind" AA8AA
+
+			else if (cnt == 2 || cnt == 3)
+				return HAND_TYPE_FULL_HOUSE; // "Full house" 23332
 		}
+		return HAND_TYPE_NONE; // "Unreachable"
 	}
 
 	else if (cards_set.size() == 3) {
 		for (char c : cards_set) {
 			int cnt = count(cards.begin(), cards.end(), c);
-			if (cnt == 3) {
-				hand_type = HAND_TYPE_THREE_OF_A_KIND; // "Three of a kind" TTT98
-				break;
-			}
-			else if (cnt == 2) {
-				hand_type = HAND_TYPE_TWO_PAIR; // "Two pair" 23432
-				break;
-			}
+			if (cnt == 3)
+				return HAND_TYPE_THREE_OF_A_KIND; // "Three of a kind" TTT98
+
+			else if (cnt == 2)
+				return HAND_TYPE_TWO_PAIR; // "Two pair" 23432
 		}
+		return HAND_TYPE_NONE; // "Unreachable"
 	}
 
 	else if (cards_set.size() == 4)
-		hand_type = HAND_TYPE_ONE_PAIR; // "One pair" A23A4
+		return HAND_TYPE_ONE_PAIR; // "One pair" A23A4
 
 	else if (cards_set.size() == 5)
-		hand_type = HAND_TYPE_HIGH_CARD; // "High card" 23456
+		return HAND_TYPE_HIGH_CARD; // "High card" 23456
 
 	else
-		hand_type = HAND_TYPE_NONE; // "Unreachable"
-
-	int j = 0;
-	for (char c : hand)
-		if (c == 'J')
-			j++;
-
-	if (j) {
-		if (hand_type == HAND_TYPE_ONE_PAIR && j == 1) {
-			return HAND_TYPE_THREE_OF_A_KIND;
-		}
-		if (hand_type == HAND_TYPE_TWO_PAIR && j == 2) {
-			return HAND_TYPE_FOUR_OF_A_KIND;
-		}
-		if (hand_type == HAND_TYPE_TWO_PAIR && j == 1) {
-			return HAND_TYPE_FULL_HOUSE;
-		}
-		if (hand_type == HAND_TYPE_THREE_OF_A_KIND && j == 1) {
-			return HAND_TYPE_FOUR_OF_A_KIND;
-		}
-		if (j == 3) {
-			hand_type += 2;
-			j = 0;
-		}
-		if (hand_type == HAND_TYPE_FOUR_OF_A_KIND && j == 4) {
-			return HAND_TYPE_FIVE_OF_A_KIND;
-		}
-
-		for (int i = 0; i < j; i++)
-			hand_type++;
-	}
-
-	assert(hand_type < HAND_TYPE_NONE);
-
-	return (HandType)hand_type;
-} // :)
+		return HAND_TYPE_NONE; // "Unreachable"
+}
 
 int cmp(const void* left, const void* right)
 {
@@ -194,8 +154,8 @@ int main()
 
 	for (int i = 0; i < size; i++) {
 		string hand = lines[i].substr(0, 5);
-		assert(hand.size() == 5);
 		for (int c = 0; c < 5; c++) {
+			assert(hand.size() == 5);
 			players[i].cards[c] = get_card(hand[c]);
 		}
 		players[i].bid = stoi(lines[i].substr(6));
@@ -204,14 +164,16 @@ int main()
 
 	qsort((void*)players, (unsigned)size, sizeof(*players), cmp);
 
-	unsigned long part_2 = 0;
-	for (int c = 0, n = size; c < size && n > 0; c++, n--) {
-		part_2 += players[c].bid * n;
+	int part_1 = 0;
+	int n = size;
+	for (int c = 0; c < size; c++) {
+		part_1 += players[c].bid * n;
+		n--;
 	}
 
 	delete[] players;
 
-	cout << "PART 2: " << part_2 << endl;
+	cout << "PART 1: " << part_1 << endl;
 
 	return 0;
 }
